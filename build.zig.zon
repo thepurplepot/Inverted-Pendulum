@@ -1,0 +1,17 @@
+.{
+    .name = "inverted-pendulum",
+    .version = "0.0.1",
+    .dependencies = .{
+        .raylib = .{
+            .version = "5.1-dev",
+            .type = "git",
+            .path = "raylib",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "README.md",
+        "src",
+    },
+}
