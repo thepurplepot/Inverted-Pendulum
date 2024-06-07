@@ -1,14 +1,22 @@
 const std = @import("std");
 const r = @cImport(@cInclude("raylib.h"));
+const g = @import("NEAT/graph.zig");
 
-pub fn main() void {
+// const scalar = f32;
+
+pub fn main() !void {
     r.InitWindow(960, 540, "Test Window");
-	r.SetTargetFPS(144);
-	defer r.CloseWindow();
+    r.SetTargetFPS(30);
+    defer r.CloseWindow();
 
-	while (!r.WindowShouldClose()) {
-		r.BeginDrawing();
-		r.ClearBackground(r.BLACK);
-		r.EndDrawing();
-	}
+    var x: c_int = 0;
+
+    while (!r.WindowShouldClose()) {
+        r.BeginDrawing();
+        r.ClearBackground(r.BLACK);
+        r.DrawText("Congrats! You created your first window!", 190, 200, 20, r.LIGHTGRAY);
+        r.DrawRectangle(@mod(x, 960), 10, 100, 100, r.RED);
+        x += 10;
+        r.EndDrawing();
+    }
 }

@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) !void {
     const opt = b.standardOptimizeOption(.{});
     const exe = b.addExecutable(.{
         .name = "inverted-pendulum",
-        .root_source_file =  b.path("src/main.zig"),
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = opt,
     });
@@ -35,7 +35,7 @@ pub fn build(b: *std.Build) !void {
     run_step.dependOn(&run_cmd.step);
 
     const unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/main.zig"),
+        .root_source_file = b.path("src/NEAT/graph.zig"),
         .target = target,
         .optimize = opt,
     });
