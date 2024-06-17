@@ -35,10 +35,11 @@ pub fn build(b: *std.Build) !void {
     run_step.dependOn(&run_cmd.step);
 
     const unit_tests = b.addTest(.{
-        .root_source_file = b.path("src/NEAT/graph.zig"),
+        .root_source_file = b.path("src/tests.zig"),
         .target = target,
         .optimize = opt,
     });
+    unit_tests.linkLibrary(raylib_dep.artifact("raylib"));
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
 

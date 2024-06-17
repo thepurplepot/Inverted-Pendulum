@@ -1,22 +1,49 @@
 const std = @import("std");
 const r = @cImport(@cInclude("raylib.h"));
-const g = @import("NEAT/graph.zig");
+const stadium = @import("Training/stadium.zig");
+const config = @import("Physics/config.zig");
+const demo = @import("Demo/demo.zig");
 
-// const scalar = f32;
+const DT = 0.01;
 
 pub fn main() !void {
-    r.InitWindow(960, 540, "Test Window");
-    r.SetTargetFPS(30);
-    defer r.CloseWindow();
+    // Raylib initialization
+    r.InitWindow(config.world_size, config.world_height, "Inverted Pendulum Simulation");
+    r.SetTargetFPS(60);
 
-    var x: c_int = 0;
+    // AI initialization
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    var s = stadium.Stadium.create(allocator);
+    defer s.destroy(allocator);
+    var d = false;
+    var demo_scene = demo.Demo{};
 
     while (!r.WindowShouldClose()) {
-        r.BeginDrawing();
-        r.ClearBackground(r.BLACK);
-        r.DrawText("Congrats! You created your first window!", 190, 200, 20, r.LIGHTGRAY);
-        r.DrawRectangle(@mod(x, 960), 10, 100, 100, r.RED);
-        x += 10;
-        r.EndDrawing();
+        if (r.IsKeyPressed(r.KEY_T)) {
+            d = !d;
+            if (d) {
+                demo_scene.init(allocator, s.agents.items[0]);
+            }
+        }
+
+        if (r.IsKeyPressed(r.KEY_E)) {
+            if (d) {
+                demo_scene.enable_ai = !demo_scene.enable_ai;
+            }
+        }
+
+        if (!d) {
+            try s.update(allocator, DT);
+        } else {
+            try demo_scene.update(DT);
+            demo_scene.render();
+        }
     }
+
+    r.CloseWindow();
 }
+
+// T - Toggle demo mode
+// E - Toggle AI
+// R - Reset in demo mode
