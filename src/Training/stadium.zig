@@ -64,7 +64,16 @@ pub const Stadium = struct {
         if (self.s.iteration % config.best_save_period == 0) {
             try self.saveBest();
         }
-        self.tasks.items[0].render();
+        var buf: [40]u8 = undefined;
+        const info: []const u8 = try std.fmt.bufPrintZ(&buf, "Iteration: {}, Best: {d:.2}", .{ self.s.iteration, self.s.iteration_best_score });
+        r.BeginDrawing();
+        r.ClearBackground(r.RAYWHITE);
+        r.DrawText(info.ptr, 10, 10, 20, r.MAROON);
+        for (0..config.population_size) |i| {
+            const alpha = 0.2;
+            self.tasks.items[i].agent.draw(alpha);
+        }
+        r.EndDrawing();
     }
 
     pub fn initIteration(self: *Stadium, allocator: std.mem.Allocator) void {
@@ -98,7 +107,7 @@ pub const Stadium = struct {
 
     fn saveBest(self: *Stadium) !void {
         std.debug.print("Saving best genome\n", .{});
-        var buf: [20]u8 = undefined;
+        var buf: [30]u8 = undefined;
         const filename: []const u8 = try std.fmt.bufPrint(&buf, "best_{}.txt", .{self.s.iteration});
         try self.agents.items[0].genome.writeToFile(filename);
     }

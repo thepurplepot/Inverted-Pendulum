@@ -1,5 +1,5 @@
 const std = @import("std");
-const r = @cImport(@cInclude("raylib.h"));
+const r = @import("../raylib.zig");
 const config = @import("config.zig");
 
 pub const Pendulum = struct {
@@ -13,6 +13,7 @@ pub const Pendulum = struct {
     base_velocity: f32,
 
     pub fn create() Pendulum {
+        r.SetTargetFPS(60);
         return Pendulum{
             .gravity = config.gravity,
             .drag_coefficient = config.drag_coefficient,
@@ -38,16 +39,15 @@ pub const Pendulum = struct {
         };
     }
 
-    pub fn draw(self: *const Pendulum) void {
+    pub fn draw(self: *const Pendulum, alpha: f32) void {
         const origin = self.base_position;
         const end = r.Vector2{
             .x = origin.x + self.length * 100 * std.math.sin(self.angle),
             .y = origin.y + self.length * 100 * std.math.cos(self.angle),
         };
-
-        r.DrawLineV(origin, end, r.BLACK);
-        r.DrawCircleV(end, 10, r.RED);
-        r.DrawRectangleV(r.Vector2{ .x = self.base_position.x - 20, .y = self.base_position.y - 10 }, r.Vector2{ .x = 40, .y = 20 }, r.BLUE);
+        r.DrawLineV(origin, end, r.ColorAlpha(r.BLACK, alpha));
+        r.DrawCircleV(end, 10, r.ColorAlpha(r.RED, alpha));
+        r.DrawRectangleV(r.Vector2{ .x = self.base_position.x - 20, .y = self.base_position.y - 10 }, r.Vector2{ .x = 40, .y = 20 }, r.ColorAlpha(r.BLUE, alpha));
     }
 };
 

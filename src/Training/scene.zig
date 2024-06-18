@@ -58,13 +58,6 @@ pub const Scene = struct {
         }
     }
 
-    pub fn render(self: *Scene) void {
-        r.BeginDrawing();
-        r.ClearBackground(r.RAYWHITE);
-        self.agent.draw();
-        r.EndDrawing();
-    }
-
     pub fn updateAi(self: *Scene, dt: f32) !void {
         const pos_x: neat_cf.Scalar = (self.agent.base_position.x - cf.world_size * 0.5) / cf.slider_size * 2;
         const angle_x: neat_cf.Scalar = std.math.cos(self.agent.angle);
@@ -77,12 +70,10 @@ pub const Scene = struct {
         if (self.enable_ai) {
             try self.net.execute(inputs[0..]);
             output = self.net.getResult()[0];
-            // std.debug.print("output: {}\n", .{output});
             self.current_velocity = output * self.config.max_speed;
-            self.updateCartPos(dt);
-        } else {
-            output = self.net.getResult()[0];
         }
+
+        self.updateCartPos(dt);
 
         const delta = @abs(output - self.last_output);
 
@@ -97,7 +88,8 @@ pub const Scene = struct {
         const threshold = cf.world_height * 0.5 - 0.9 * cf.length * 100.0;
         const dist_to_centre_penalty = @abs(1 - @abs(pos_x));
         if (pos_y < threshold) {
-            return (dt * dist_to_centre_penalty / (1.0 + self.output_sum * 0.5));
+            // std.debug.print("updating score for agent {}\n", .{self.agent_id.?});
+            return (dt * dist_to_centre_penalty / (1.0 + self.distance_sum * 0.1 + self.output_sum * 0.5));
         }
         return 0.0;
     }
