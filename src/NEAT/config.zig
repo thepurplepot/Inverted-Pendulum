@@ -1,6 +1,6 @@
 pub const Scalar = f32;
 pub const mut_count = 4;
-pub const new_node_prob = 0.05;
+pub const new_node_prob = 0.1;
 pub const new_connection_prob = 0.8;
 pub const new_value_prob = 0.2;
 pub const max_hidden_nodes = 30;

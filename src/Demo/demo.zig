@@ -35,11 +35,11 @@ pub const Demo = struct {
         if (!self.enable_ai) {
             self.time_multiplier = 1;
             if (r.IsKeyDown(r.KEY_A)) {
-                self.s.current_velocity = -300;
+                self.s.force = -5;
             } else if (r.IsKeyDown(r.KEY_D)) {
-                self.s.current_velocity = 300;
+                self.s.force = 5;
             } else {
-                self.s.current_velocity = 0;
+                self.s.force = 0;
             }
         } else {
             self.time_multiplier = 5;

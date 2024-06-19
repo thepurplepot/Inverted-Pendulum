@@ -11,7 +11,7 @@ pub const Scene = struct {
     agent_id: ?usize = null,
     freeze_time: f32 = 0.0,
     current_time: f32 = 0.0,
-    current_velocity: f32 = 0.0,
+    force: f32 = 0.0,
     output_sum: f32 = 0.0,
     last_output: f32 = 0.0,
     distance_sum: f32 = 0.0,
@@ -27,14 +27,14 @@ pub const Scene = struct {
 
     pub fn init(self: *Scene, allocator: std.mem.Allocator, s: state.TrainingState, ai: *agent_info.AgentInfo) void {
         self.current_time = 0.0;
-        self.current_velocity = 0.0;
+        self.force = 0.0;
         self.output_sum = 0.0;
         self.last_output = 0.0;
         self.distance_sum = 0.0;
 
         self.config = s.iteration_config;
 
-        self.agent = pendulum.Pendulum.create();
+        self.agent = pendulum.Pendulum{};
         self.ai = ai;
 
         ai.score = 0.0;
@@ -59,7 +59,7 @@ pub const Scene = struct {
     }
 
     pub fn updateAi(self: *Scene, dt: f32) !void {
-        const pos_x: neat_cf.Scalar = (self.agent.base_position.x - cf.world_size * 0.5) / cf.slider_size * 2;
+        const pos_x: neat_cf.Scalar = self.agent.base_position.x;
         const angle_x: neat_cf.Scalar = std.math.cos(self.agent.angle);
         const angle_y: neat_cf.Scalar = std.math.sin(self.agent.angle);
         const angular_vel: neat_cf.Scalar = self.agent.angular_velocity;
@@ -70,10 +70,10 @@ pub const Scene = struct {
         if (self.enable_ai) {
             try self.net.execute(inputs[0..]);
             output = self.net.getResult()[0];
-            self.current_velocity = output * self.config.max_speed;
+            self.force = output * self.config.max_force;
         }
 
-        self.updateCartPos(dt);
+        self.agent.applyForce(self.force);
 
         const delta = @abs(output - self.last_output);
 
@@ -85,31 +85,12 @@ pub const Scene = struct {
     }
 
     fn getScore(self: *Scene, dt: f32, pos_x: f32, pos_y: f32) f32 {
-        const threshold = cf.world_height * 0.5 - 0.9 * cf.length * 100.0;
+        const threshold = cf.world_height * 0.5 - 0.9 * cf.length * cf.world_size / 4.0;
         const dist_to_centre_penalty = @abs(1 - @abs(pos_x));
         if (pos_y < threshold) {
             // std.debug.print("updating score for agent {}\n", .{self.agent_id.?});
-            return (dt * dist_to_centre_penalty / (1.0 + self.distance_sum * 0.1 + self.output_sum * 0.5));
+            return (dt * dist_to_centre_penalty / (1.0 + self.output_sum * 0.5));
         }
         return 0.0;
-    }
-
-    pub fn updateCartPos(self: *Scene, dt: f32) void {
-        const new_pos = self.agent.base_position.x + self.current_velocity * dt;
-        const min_pos = cf.world_size * 0.5 - cf.slider_size * 0.5;
-        const max_pos = cf.world_size * 0.5 + cf.slider_size * 0.5;
-
-        if (new_pos < min_pos) {
-            self.agent.base_position.x = min_pos;
-            self.current_velocity = 0.0;
-            self.agent.base_velocity = 0.0;
-        } else if (new_pos > max_pos) {
-            self.agent.base_position.x = max_pos;
-            self.current_velocity = 0.0;
-            self.agent.base_velocity = 0.0;
-        } else {
-            self.agent.base_position.x = new_pos;
-            self.agent.base_velocity = self.current_velocity;
-        }
     }
 };

@@ -1,7 +1,7 @@
 pub const TrainingState = struct {
     pub const IterationConfig = struct {
-        gravity: f32 = 9.81,
-        max_speed: f32 = 1000,
+        gravity: f32 = 10.0,
+        max_force: f32 = 40,
 
         task_sub_steps: u32 = 1,
     };
